@@ -1,6 +1,7 @@
 package ask
 
 import (
+	"math"
 	"reflect"
 	"testing"
 )
@@ -74,24 +75,24 @@ func TestPath(t *testing.T) {
 func TestString(t *testing.T) {
 
 	source := map[string]interface{}{
-		"value1": "test",
-		"value2": 100,
+		"string": "test",
+		"number": 100,
 	}
 
 	// OK
-	res, ok := For(source, "value1").String("default")
+	res, ok := For(source, "string").String("default")
 	if !ok || res != "test" {
 		t.Errorf(`String() = ("%s", %t); want ("test", true)`, res, ok)
 	}
 
 	// Wrong type
-	res, ok = For(source, "value2").String("default")
+	res, ok = For(source, "number").String("default")
 	if ok || res != "default" {
 		t.Errorf(`String() = ("%s", %t); want ("default", false)`, res, ok)
 	}
 
 	// Missing
-	res, ok = For(source, "value3").String("default")
+	res, ok = For(source, "nothing").String("default")
 	if ok || res != "default" {
 		t.Errorf(`String() = ("%s", %t); want ("default", false)`, res, ok)
 	}
@@ -101,31 +102,31 @@ func TestString(t *testing.T) {
 func TestBool(t *testing.T) {
 
 	source := map[string]interface{}{
-		"value1": true,
-		"value2": false,
-		"value3": 100,
+		"bool1":  true,
+		"bool2":  false,
+		"number": 100,
 	}
 
 	// OK
-	res, ok := For(source, "value1").Bool(false)
+	res, ok := For(source, "bool1").Bool(false)
 	if !ok || res != true {
 		t.Errorf(`Bool() = (%t, %t); want (true, true)`, res, ok)
 	}
 
 	// OK
-	res, ok = For(source, "value2").Bool(false)
+	res, ok = For(source, "bool2").Bool(false)
 	if !ok || res != false {
 		t.Errorf(`Bool() = (%t, %t); want (false, true)`, res, ok)
 	}
 
 	// Wrong type
-	res, ok = For(source, "value3").Bool(false)
+	res, ok = For(source, "number").Bool(false)
 	if ok || res != false {
 		t.Errorf(`Bool() = (%t, %t); want (false, false)`, res, ok)
 	}
 
 	// Missing
-	res, ok = For(source, "value4").Bool(false)
+	res, ok = For(source, "nothing").Bool(false)
 	if ok || res != false {
 		t.Errorf(`Bool() = (%t, %t); want (false, false)`, res, ok)
 	}
@@ -135,31 +136,52 @@ func TestBool(t *testing.T) {
 func TestInt(t *testing.T) {
 
 	source := map[string]interface{}{
-		"value1": 100,
-		"value2": -100,
-		"value3": "test",
+		"positive": 100,
+		"negative": -100,
+		"unsigned": uint(100),
+		"float":    float64(100),
+		"toobig":   uint64(math.MaxUint64),
+		"string":   "test",
 	}
 
 	// OK
-	res, ok := For(source, "value1").Int(5)
+	res, ok := For(source, "positive").Int(5)
 	if !ok || res != 100 {
 		t.Errorf("Int() = (%d, %t); want (100, true)", res, ok)
 	}
 
 	// OK negative
-	res, ok = For(source, "value2").Int(5)
+	res, ok = For(source, "negative").Int(5)
 	if !ok || res != -100 {
 		t.Errorf("Int() = (%d, %t); want (-100, true)", res, ok)
 	}
 
+	// OK unsigned
+	res, ok = For(source, "unsigned").Int(5)
+	if !ok || res != 100 {
+		t.Errorf("Int() = (%d, %t); want (100, true)", res, ok)
+	}
+
+	// OK float
+	res, ok = For(source, "float").Int(5)
+	if !ok || res != 100 {
+		t.Errorf("Int() = (%d, %t); want (100, true)", res, ok)
+	}
+
+	// Too big number
+	res, ok = For(source, "toobig").Int(5)
+	if ok || res != 5 {
+		t.Errorf("Int() = (%d, %t); want (5, false)", res, ok)
+	}
+
 	// Wrong type
-	res, ok = For(source, "value3").Int(5)
+	res, ok = For(source, "string").Int(5)
 	if ok || res != 5 {
 		t.Errorf("Int() = (%d, %t); want (5, false)", res, ok)
 	}
 
 	// Missing
-	res, ok = For(source, "value4").Int(5)
+	res, ok = For(source, "nothing").Int(5)
 	if ok || res != 5 {
 		t.Errorf("Int() = (%d, %t); want (5, false)", res, ok)
 	}
@@ -169,31 +191,45 @@ func TestInt(t *testing.T) {
 func TestUint(t *testing.T) {
 
 	source := map[string]interface{}{
-		"value1": 100,
-		"value2": -100,
-		"value3": "test",
+		"positive": 100,
+		"negative": -100,
+		"unsigned": uint(100),
+		"float":    float64(100),
+		"string":   "test",
 	}
 
 	// OK
-	res, ok := For(source, "value1").Uint(5)
+	res, ok := For(source, "positive").Uint(5)
+	if !ok || res != 100 {
+		t.Errorf("Uint() = (%d, %t); want (100, true)", res, ok)
+	}
+
+	// OK unsigned
+	res, ok = For(source, "unsigned").Uint(5)
+	if !ok || res != 100 {
+		t.Errorf("Uint() = (%d, %t); want (100, true)", res, ok)
+	}
+
+	// OK float
+	res, ok = For(source, "float").Uint(5)
 	if !ok || res != 100 {
 		t.Errorf("Uint() = (%d, %t); want (100, true)", res, ok)
 	}
 
 	// Fail on negative
-	res, ok = For(source, "value2").Uint(5)
+	res, ok = For(source, "negative").Uint(5)
 	if ok || res != 5 {
 		t.Errorf("Uint() = (%d, %t); want (5, false)", res, ok)
 	}
 
 	// Wrong type
-	res, ok = For(source, "value3").Uint(5)
+	res, ok = For(source, "string").Uint(5)
 	if ok || res != 5 {
 		t.Errorf("Uint() = (%d, %t); want (5, false)", res, ok)
 	}
 
 	// Missing
-	res, ok = For(source, "value4").Uint(5)
+	res, ok = For(source, "nothing").Uint(5)
 	if ok || res != 5 {
 		t.Errorf("Uint() = (%d, %t); want (5, false)", res, ok)
 	}
@@ -203,31 +239,52 @@ func TestUint(t *testing.T) {
 func TestFloat(t *testing.T) {
 
 	source := map[string]interface{}{
-		"value1": 100.10,
-		"value2": -100.10,
-		"value3": "test",
+		"positive": 100,
+		"negative": -100,
+		"unsigned": uint(100),
+		"float32":  float32(100.1),
+		"float64":  float64(100.1),
+		"string":   "test",
 	}
 
 	// OK
-	res, ok := For(source, "value1").Float(5)
-	if !ok || res != 100.10 {
-		t.Errorf("Float() = (%f, %t); want (100.10, true)", res, ok)
+	res, ok := For(source, "positive").Float(5)
+	if !ok || res != 100 {
+		t.Errorf("Float() = (%f, %t); want (100, true)", res, ok)
 	}
 
 	// OK negative
-	res, ok = For(source, "value2").Float(5)
-	if !ok || res != -100.10 {
-		t.Errorf("Float() = (%f, %t); want (-100.10, true)", res, ok)
+	res, ok = For(source, "negative").Float(5)
+	if !ok || res != -100 {
+		t.Errorf("Float() = (%f, %t); want (-100, true)", res, ok)
+	}
+
+	// OK unsigned
+	res, ok = For(source, "unsigned").Float(5)
+	if !ok || res != 100 {
+		t.Errorf("Float() = (%f, %t); want (100, true)", res, ok)
+	}
+
+	// OK float32
+	res, ok = For(source, "float32").Float(5)
+	if !ok || math.Abs(res-100.1) > .00001 {
+		t.Errorf("Float() = (%f, %t); want (100.1, true)", res, ok)
+	}
+
+	// OK float64
+	res, ok = For(source, "float64").Float(5)
+	if !ok || res != 100.1 {
+		t.Errorf("Float() = (%f, %t); want (100.1, true)", res, ok)
 	}
 
 	// Wrong type
-	res, ok = For(source, "value3").Float(5)
+	res, ok = For(source, "string").Float(5)
 	if ok || res != 5 {
 		t.Errorf("Float() = (%f, %t); want (5, false)", res, ok)
 	}
 
 	// Missing
-	res, ok = For(source, "value4").Float(5)
+	res, ok = For(source, "nothing").Float(5)
 	if ok || res != 5 {
 		t.Errorf("Float() = (%f, %t); want (5, false)", res, ok)
 	}
@@ -239,31 +296,31 @@ func TestSlice(t *testing.T) {
 	def := make([]interface{}, 1)
 
 	source := map[string]interface{}{
-		"value1": make([]interface{}, 5),
-		"value2": make([]interface{}, 0),
-		"value3": "test",
+		"slice1": make([]interface{}, 5),
+		"slice2": make([]interface{}, 0),
+		"string": "test",
 	}
 
 	// OK
-	res, ok := For(source, "value1").Slice(def)
+	res, ok := For(source, "slice1").Slice(def)
 	if !ok || len(res) != 5 {
 		t.Errorf("Slice() = ([%d], %t); want ([5]], true)", len(res), ok)
 	}
 
 	// OK
-	res, ok = For(source, "value2").Slice(def)
+	res, ok = For(source, "slice2").Slice(def)
 	if !ok || len(res) != 0 {
 		t.Errorf("Slice() = ([%d], %t); want ([0], true)", len(res), ok)
 	}
 
 	// Wrong type
-	res, ok = For(source, "value3").Slice(def)
+	res, ok = For(source, "string").Slice(def)
 	if ok || len(res) != 1 {
 		t.Errorf("Slice() = ([%d], %t); want ([1], false)", len(res), ok)
 	}
 
 	// Missing
-	res, ok = For(source, "value4").Slice(def)
+	res, ok = For(source, "nothing").Slice(def)
 	if ok || len(res) != 1 {
 		t.Errorf("Slice() = ([%d], %t); want ([1], false)", len(res), ok)
 	}
@@ -275,24 +332,24 @@ func TestMap(t *testing.T) {
 	def := map[string]interface{}{"value00": "test"}
 
 	source := map[string]interface{}{
-		"value1": map[string]interface{}{"value11": "test", "value12": "test"},
-		"value2": "test",
+		"map":    map[string]interface{}{"value11": "test", "value12": "test"},
+		"string": "test",
 	}
 
 	// OK
-	res, ok := For(source, "value1").Map(def)
+	res, ok := For(source, "map").Map(def)
 	if !ok || len(res) != 2 {
 		t.Errorf("Map() = ([%d], %t); want ([2]], true)", len(res), ok)
 	}
 
 	// Wrong type
-	res, ok = For(source, "value2").Map(def)
+	res, ok = For(source, "string").Map(def)
 	if ok || len(res) != 1 {
 		t.Errorf("Map() = ([%d], %t); want ([1], false)", len(res), ok)
 	}
 
 	// Missing
-	res, ok = For(source, "value3").Map(def)
+	res, ok = For(source, "nothing").Map(def)
 	if ok || len(res) != 1 {
 		t.Errorf("Map() = ([%d], %t); want ([1], false)", len(res), ok)
 	}
@@ -304,6 +361,7 @@ func TestExists(t *testing.T) {
 	source := map[string]interface{}{
 		"value1": "test",
 		"value2": 0,
+		"nil":    nil,
 	}
 
 	// OK
@@ -318,8 +376,14 @@ func TestExists(t *testing.T) {
 		t.Errorf("Exists() = (%t); want (true)", res)
 	}
 
+	// Nil value is the same as missing
+	res = For(source, "nil").Exists()
+	if res {
+		t.Errorf("Exists() = (%t); want (false)", res)
+	}
+
 	// Missing
-	res = For(source, "value3").Exists()
+	res = For(source, "nothing").Exists()
 	if res {
 		t.Errorf("Exists() = (%t); want (false)", res)
 	}
@@ -336,19 +400,19 @@ func TestValue(t *testing.T) {
 	// OK
 	res := For(source, "value1").Value()
 	if res != "test" {
-		t.Errorf("Exists() = (%v); want (test)", res)
+		t.Errorf("Value() = (%v); want (test)", res)
 	}
 
 	// OK
 	res = For(source, "value2").Value()
 	if res != 0 {
-		t.Errorf("Exists() = (%v); want (0)", res)
+		t.Errorf("Value() = (%v); want (0)", res)
 	}
 
 	// Missing
-	res = For(source, "value3").Value()
+	res = For(source, "nothing").Value()
 	if res != nil {
-		t.Errorf("Exists() = (%v); want (nil)", res)
+		t.Errorf("Value() = (%v); want (nil)", res)
 	}
 
 }
