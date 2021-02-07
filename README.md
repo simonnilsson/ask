@@ -3,6 +3,7 @@
 <br/>
 <a href="https://pkg.go.dev/github.com/simonnilsson/ask"><img src="https://pkg.go.dev/badge/github.com/simonnilsson/ask" alt="PkgGoDev" /></a>
 <a href="https://goreportcard.com/report/github.com/simonnilsson/ask"><img src="https://goreportcard.com/badge/github.com/simonnilsson/ask" alt="Go Report Card" /></a>
+<a href="https://gocover.io/github.com/simonnilsson/ask"><img src="http://gocover.io/_badge/github.com/simonnilsson/ask" alt="GoCover.io" /></a>
 <br/>
 and you shall receive.
 </p>
