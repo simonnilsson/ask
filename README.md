@@ -63,9 +63,9 @@ After receiving an `*Answer` from a call to For() it can be asserted to a type. 
 * `Slice(d []interface{}) ([]interface{}, bool)`
 * `Map(d map[string]interface{}) (map[string]interface{}, bool)`
 
-If a number is found but it is of different type than requested it will be casted to desired type and return success even if this results in an overflow. `Uint()` will fail in case value is negative and the default parameter will be returned instead.
+If a number is found but it is of different type than requested it will be casted to desired type and return success. If the value would not fit within the valid range of requested type the operation will fail however and the default parameter will be returned instead.
 
-Two additional methods are available, one to check if the answer has a value (not nil) and on to return the raw value as a interface{}.
+Two additional methods are available, one to check if the answer has a value (not nil) and one to return the raw value as a interface{}.
 
 * `Exists() bool`
 * `Value() interface{}`
