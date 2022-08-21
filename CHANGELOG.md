@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+
+## [0.3.0] - 2022-08-21
 ### Changed
 - Added support for handling custom types derived from `map[string]interface{}` and `[]interface{}`
 - **Breaking:** Minimum Go version bumped from 1.15 to 1.17 
