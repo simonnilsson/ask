@@ -28,6 +28,12 @@ func TestFor(t *testing.T) {
 		t.Errorf(`For() = (%v); want (nil)`, answer.value)
 	}
 
+	// Missing slice
+	answer = For(source, "d[1]")
+	if answer.value != nil {
+		t.Errorf("For() = (%v); want (nil)", answer.value)
+	}
+
 	// Empty path should return source
 	answer = For(source, "")
 	if !reflect.DeepEqual(answer.value, source) {
@@ -327,12 +333,81 @@ func TestSlice(t *testing.T) {
 
 }
 
+func TestCustomSlice(t *testing.T) {
+
+	type CustomSlice []interface{}
+
+	def := make(CustomSlice, 1)
+
+	source := map[string]interface{}{
+		"slice1": make(CustomSlice, 5),
+		"slice2": make(CustomSlice, 0),
+		"string": "test",
+	}
+
+	// OK
+	res, ok := For(source, "slice1").Slice(def)
+	if !ok || len(res) != 5 {
+		t.Errorf("Slice() = ([%d], %t); want ([5]], true)", len(res), ok)
+	}
+
+	// OK
+	res, ok = For(source, "slice2").Slice(def)
+	if !ok || len(res) != 0 {
+		t.Errorf("Slice() = ([%d], %t); want ([0], true)", len(res), ok)
+	}
+
+	// Wrong type
+	res, ok = For(source, "string").Slice(def)
+	if ok || len(res) != 1 {
+		t.Errorf("Slice() = ([%d], %t); want ([1], false)", len(res), ok)
+	}
+
+	// Missing
+	res, ok = For(source, "nothing").Slice(def)
+	if ok || len(res) != 1 {
+		t.Errorf("Slice() = ([%d], %t); want ([1], false)", len(res), ok)
+	}
+
+}
+
 func TestMap(t *testing.T) {
 
 	def := map[string]interface{}{"value00": "test"}
 
 	source := map[string]interface{}{
 		"map":    map[string]interface{}{"value11": "test", "value12": "test"},
+		"string": "test",
+	}
+
+	// OK
+	res, ok := For(source, "map").Map(def)
+	if !ok || len(res) != 2 {
+		t.Errorf("Map() = ([%d], %t); want ([2]], true)", len(res), ok)
+	}
+
+	// Wrong type
+	res, ok = For(source, "string").Map(def)
+	if ok || len(res) != 1 {
+		t.Errorf("Map() = ([%d], %t); want ([1], false)", len(res), ok)
+	}
+
+	// Missing
+	res, ok = For(source, "nothing").Map(def)
+	if ok || len(res) != 1 {
+		t.Errorf("Map() = ([%d], %t); want ([1], false)", len(res), ok)
+	}
+
+}
+
+func TestCustomMap(t *testing.T) {
+
+	type CustomMap map[string]interface{}
+
+	def := CustomMap{"value00": "test"}
+
+	source := CustomMap{
+		"map":    CustomMap{"value11": "test", "value12": "test"},
 		"string": "test",
 	}
 

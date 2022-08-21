@@ -1,3 +1,3 @@
 module github.com/simonnilsson/ask
 
-go 1.15
+go 1.17
