@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Fixed
+- Fixed handling of negative floats in Int()
 
 
 ## [0.3.0] - 2022-08-21

@@ -142,12 +142,13 @@ func TestBool(t *testing.T) {
 func TestInt(t *testing.T) {
 
 	source := map[string]interface{}{
-		"positive": 100,
-		"negative": -100,
-		"unsigned": uint(100),
-		"float":    float64(100),
-		"toobig":   uint64(math.MaxUint64),
-		"string":   "test",
+		"positive":       100,
+		"negative":       -100,
+		"unsigned":       uint(100),
+		"float":          float64(100),
+		"negative_float": float64(-100),
+		"toobig":         uint64(math.MaxUint64),
+		"string":         "test",
 	}
 
 	// OK
@@ -172,6 +173,12 @@ func TestInt(t *testing.T) {
 	res, ok = For(source, "float").Int(5)
 	if !ok || res != 100 {
 		t.Errorf("Int() = (%d, %t); want (100, true)", res, ok)
+	}
+
+	// OK negative float
+	res, ok = For(source, "negative_float").Int(5)
+	if !ok || res != -100 {
+		t.Errorf("Int() = (%d, %t); want (-100, true)", res, ok)
 	}
 
 	// Too big number

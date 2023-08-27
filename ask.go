@@ -137,7 +137,7 @@ func (a *Answer) Int(d int64) (int64, bool) {
 		}
 	case float32, float64:
 		val := reflect.ValueOf(vt).Float()
-		if val >= 0 && val <= math.MaxInt64 {
+		if val >= math.MinInt64 && val <= math.MaxInt64 {
 			return int64(val), true
 		}
 	}
