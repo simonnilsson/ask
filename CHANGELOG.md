@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Changed
+- Added ForArgs() and PathArgs() 
+- Improvements to README
+
 ### Fixed
 - Fixed handling of negative floats in Int()
 

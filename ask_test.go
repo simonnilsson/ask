@@ -48,6 +48,55 @@ func TestFor(t *testing.T) {
 
 }
 
+func TestForPath(t *testing.T) {
+
+	source := map[string]interface{}{
+		"a": []interface{}{
+			map[string]interface{}{
+				"b":   100,
+				"c.d": true,
+			},
+		},
+	}
+
+	// OK
+	answer := ForArgs(source, "a", 0, "b")
+	if answer.value != 100 {
+		t.Errorf(`ForArgs() = (%v); want (100)`, answer.value)
+	}
+
+	// Missing
+	answer = ForArgs(source, "a", 1, "b")
+	if answer.value != nil {
+		t.Errorf(`ForArgs() = (%v); want (nil)`, answer.value)
+	}
+
+	// Missing slice
+	answer = ForArgs(source, "d", 1)
+	if answer.value != nil {
+		t.Errorf("ForArgs() = (%v); want (nil)", answer.value)
+	}
+
+	// Part with dot in field name should return value
+	answer = ForArgs(source, "a", 0, "c.d")
+	if answer.value != true {
+		t.Errorf(`ForArgs() = (%v); want (true)`, answer.value)
+	}
+
+	// Empty path should return source
+	answer = ForArgs(source, "")
+	if !reflect.DeepEqual(answer.value, source) {
+		t.Errorf(`ForArgs() = (%v); want (source)`, answer.value)
+	}
+
+	// Invalid path should return nil value
+	answer = ForArgs(source, "---")
+	if answer.value != nil {
+		t.Errorf(`ForArgs() = (%v); want (nil)`, answer.value)
+	}
+
+}
+
 func TestPath(t *testing.T) {
 
 	source := map[string]interface{}{
@@ -72,6 +121,36 @@ func TestPath(t *testing.T) {
 
 	// Empty path should return source
 	answer = For(source, "").Path("")
+	if !reflect.DeepEqual(answer.value, source) {
+		t.Errorf(`Path() = (%v); want (source)`, answer.value)
+	}
+
+}
+
+func TestPathArgs(t *testing.T) {
+
+	source := map[string]interface{}{
+		"a": []interface{}{
+			map[string]interface{}{
+				"b": 100,
+			},
+		},
+	}
+
+	// OK
+	answer := For(source, "a").PathArgs(0, "b")
+	if answer.value != 100 {
+		t.Errorf(`Path() = (%v); want (100)`, answer.value)
+	}
+
+	// Missing
+	answer = For(source, "a[1]").PathArgs("b")
+	if answer.value != nil {
+		t.Errorf(`Path() = (%v); want (nil)`, answer.value)
+	}
+
+	// Empty path should return source
+	answer = For(source, "").PathArgs("")
 	if !reflect.DeepEqual(answer.value, source) {
 		t.Errorf(`Path() = (%v); want (source)`, answer.value)
 	}
