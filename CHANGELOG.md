@@ -2,9 +2,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+
+## [0.4.0] - 2023-08-28
 ### Changed
 - Added ForArgs() and PathArgs() 
 - Improvements to README
+- Added CI workflow with test run and coverage report
 
 ### Fixed
 - Fixed handling of negative floats in Int()
