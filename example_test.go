@@ -18,14 +18,14 @@ func Example() {
  	}`), &object)
 
 	// Extract the 3
-	res, ok := For(object, "a[0].b.c").Int(0)
-	fmt.Println(res, ok)
+	res, err := For(object, "a[0].b.c").Int(0)
+	fmt.Println(res, err)
 
 	// Attempt extracting a string at path .d that does not exist
-	res2, ok := For(object, "a[0].b.d").String("nothing")
-	fmt.Println(res2, ok)
+	res2, err := For(object, "a[0].b.d").String("default")
+	fmt.Println(res2, err)
 
 	// Output:
-	// 3 true
-	// nothing false
+	// 3 <nil>
+	// default not found
 }

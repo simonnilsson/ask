@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Changed
+- **Breaking:** Replace boolean return values with idiomatic go errors
 
 
 ## [0.4.0] - 2023-08-28

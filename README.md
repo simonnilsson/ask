@@ -28,16 +28,16 @@ func main() {
 	json.Unmarshal([]byte(`{ "a": [{ "b": { "c": 3 } }] }`), &object)
 
 	// Extract the 3
-	res, ok := ask.For(object, "a[0].b.c").Int(0)
+	res, err := ask.For(object, "a[0].b.c").Int(0)
 
-	fmt.Println(res, ok)
-	// Output: 3 true
+	fmt.Println(res, err)
+	// Output: 3 <nil>
 
 	// Attempt extracting a string at path .d that does not exist
-	res2, ok := ask.ForArgs(object, "a", 0, "b", "d").String("nothing")
+	res2, ok := ask.ForArgs(object, "a", 0, "b", "d").String("default")
 
 	fmt.Println(res2, ok)
-	// Output: nothing false
+	// Output: default not found
 
 }
 ```
@@ -62,16 +62,16 @@ Additional paths can be traversed by calling Path()/PathArgs() on the resulting 
 After receiving an `*Answer` from a call to For() it can be asserted to a type. The methods for this is seen below. Each function takes a default value as a parameter that will be returned in case the value can not be asserted from the answer. A second return value is used to indicate if the assertion was successful.
 
 ```go
-(a *Answer) String(d string) (string, bool)
-(a *Answer) Bool(d bool) (bool, bool)
-(a *Answer) Int(d int64) (int64, bool)
-(a *Answer) Uint(d uint64) (uint64, bool)
-(a *Answer) Float(d float64) (float64, bool)
-(a *Answer) Slice(d []interface{}) ([]interface{}, bool)
-(a *Answer) Map(d map[string]interface{}) (map[string]interface{}, bool)
+(a *Answer) String(d string) (string, error)
+(a *Answer) Bool(d bool) (bool, error)
+(a *Answer) Int(d int64) (int64, error)
+(a *Answer) Uint(d uint64) (uint64, error)
+(a *Answer) Float(d float64) (float64, error)
+(a *Answer) Slice(d []interface{}) ([]interface{}, error)
+(a *Answer) Map(d map[string]interface{}) (map[string]interface{}, error)
 ```
 
-If a number is found but it is of different type than requested it will be casted to desired type and return success. If the value would not fit within the valid range of requested type the operation will fail however and the default parameter will be returned instead.
+If a number is found but it is of different type than requested it will be casted to desired type and return with no error. If the value would not fit within the valid range of requested type the operation will return "wrong type" and the default parameter will be returned instead.
 
 Two additional methods are available, one to check if the answer has a value (not nil) and one to return the raw value as a interface{}.
 

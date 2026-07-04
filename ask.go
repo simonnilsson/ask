@@ -4,6 +4,7 @@
 package ask
 
 import (
+	"errors"
 	"math"
 	"reflect"
 	"regexp"
@@ -15,24 +16,27 @@ var tokenMatcher = regexp.MustCompile(`([^[]+)?(?:\[(\d+)])?`)
 var mapType = reflect.TypeOf(map[string]interface{}{})
 var sliceType = reflect.TypeOf([]interface{}{})
 
+var ErrNotFound = errors.New("not found")
+var ErrWrongType = errors.New("wrong type")
+
 // Answer holds result of call to For, use one of its methods to extract a value.
 type Answer struct {
 	value interface{}
 }
 
-func handleIntPart(current interface{}, part int) (interface{}, bool) {
+func handleIntPart(current interface{}, part int) (interface{}, error) {
 	val := reflect.ValueOf(current)
 	if val.IsValid() && val.CanConvert(sliceType) {
 		s := val.Convert(sliceType).Interface().([]interface{})
 		if part >= 0 && part < len(s) {
-			return s[part], false
+			return s[part], nil
 		}
 	}
-	return current, true
+	return current, ErrNotFound
 }
 
-func handleStringPart(current interface{}, part string) (interface{}, bool) {
-	notFound := false
+func handleStringPart(current interface{}, part string) (interface{}, error) {
+	var err error = nil
 	match := tokenMatcher.FindStringSubmatch(strings.TrimSpace(part))
 
 	if len(match) == 3 {
@@ -42,7 +46,7 @@ func handleStringPart(current interface{}, part string) (interface{}, bool) {
 			if val.IsValid() && val.CanConvert(mapType) {
 				current = val.Convert(mapType).Interface().(map[string]interface{})[match[1]]
 			} else {
-				notFound = true
+				err = ErrNotFound
 			}
 		}
 
@@ -53,19 +57,19 @@ func handleStringPart(current interface{}, part string) (interface{}, bool) {
 
 	}
 
-	return current, notFound
+	return current, err
 }
 
 // For is used to select a path from source to return as answer.
 func For(source interface{}, path string) *Answer {
 
 	parts := strings.Split(path, ".")
-	notFound := false
+	var err error = nil
 	current := source
 
 	for _, part := range parts {
-		current, notFound = handleStringPart(current, part)
-		if notFound {
+		current, err = handleStringPart(current, part)
+		if err != nil {
 			return &Answer{}
 		}
 	}
@@ -77,20 +81,20 @@ func For(source interface{}, path string) *Answer {
 func ForArgs(source interface{}, parts ...interface{}) *Answer {
 
 	current := source
-	notFound := false
+	var err error = nil
 
 	for _, part := range parts {
 
 		switch vt := part.(type) {
 		case uint, uint8, uint16, uint32, uint64, int, int8, int16, int32, int64:
 			index := reflect.ValueOf(vt).Int()
-			current, notFound = handleIntPart(current, int(index))
-			if notFound {
+			current, err = handleIntPart(current, int(index))
+			if err != nil {
 				return &Answer{}
 			}
 		case string:
-			current, notFound = handleStringPart(current, vt)
-			if notFound {
+			current, err = handleStringPart(current, vt)
+			if err != nil {
 				return &Answer{}
 			}
 		}
@@ -123,102 +127,123 @@ func (a *Answer) Value() interface{} {
 // Slice attempts asserting answer as a []interface{}.
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
-func (a *Answer) Slice(d []interface{}) ([]interface{}, bool) {
+func (a *Answer) Slice(d []interface{}) ([]interface{}, error) {
+	if a.value == nil {
+		return d, ErrNotFound
+	}
 	val := reflect.ValueOf(a.value)
 	if val.IsValid() && val.CanConvert(sliceType) {
-		return val.Convert(sliceType).Interface().([]interface{}), true
+		return val.Convert(sliceType).Interface().([]interface{}), nil
 	}
-	return d, false
+	return d, ErrWrongType
 }
 
 // Map attempts asserting answer as a map[string]interface{}.
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
-func (a *Answer) Map(d map[string]interface{}) (map[string]interface{}, bool) {
+func (a *Answer) Map(d map[string]interface{}) (map[string]interface{}, error) {
+	if a.value == nil {
+		return d, ErrNotFound
+	}
 	val := reflect.ValueOf(a.value)
 	if val.IsValid() && val.CanConvert(mapType) {
-		return val.Convert(mapType).Interface().(map[string]interface{}), true
+		return val.Convert(mapType).Interface().(map[string]interface{}), nil
 	}
-	return d, false
+	return d, ErrWrongType
 }
 
 // String attempts asserting answer as a string.
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
-func (a *Answer) String(d string) (string, bool) {
+func (a *Answer) String(d string) (string, error) {
+	if a.value == nil {
+		return d, ErrNotFound
+	}
 	res, ok := a.value.(string)
 	if ok {
-		return res, ok
+		return res, nil
 	}
-	return d, false
+	return d, ErrWrongType
 }
 
 // Bool attempts asserting answer as a bool.
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
-func (a *Answer) Bool(d bool) (bool, bool) {
+func (a *Answer) Bool(d bool) (bool, error) {
+	if a.value == nil {
+		return d, ErrNotFound
+	}
 	res, ok := a.value.(bool)
 	if ok {
-		return res, ok
+		return res, nil
 	}
-	return d, false
+	return d, ErrWrongType
 }
 
 // Int attempts asserting answer as a int64. Casting from other number types will be done if necessary.
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
-func (a *Answer) Int(d int64) (int64, bool) {
+func (a *Answer) Int(d int64) (int64, error) {
+	if a.value == nil {
+		return d, ErrNotFound
+	}
 	switch vt := a.value.(type) {
 	case int, int8, int16, int32, int64:
-		return reflect.ValueOf(vt).Int(), true
+		return reflect.ValueOf(vt).Int(), nil
 	case uint, uint8, uint16, uint32, uint64:
 		val := reflect.ValueOf(vt).Uint()
 		if val <= math.MaxInt64 {
-			return int64(val), true
+			return int64(val), nil
 		}
 	case float32, float64:
 		val := reflect.ValueOf(vt).Float()
 		if val >= math.MinInt64 && val <= math.MaxInt64 {
-			return int64(val), true
+			return int64(val), nil
 		}
 	}
-	return d, false
+	return d, ErrWrongType
 }
 
 // Uint attempts asserting answer as a uint64. Casting from other number types will be done if necessary.
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
-func (a *Answer) Uint(d uint64) (uint64, bool) {
+func (a *Answer) Uint(d uint64) (uint64, error) {
+	if a.value == nil {
+		return d, ErrNotFound
+	}
 	switch vt := a.value.(type) {
 	case int, int8, int16, int32, int64:
 		val := reflect.ValueOf(vt).Int()
 		if val >= 0 {
-			return uint64(val), true
+			return uint64(val), nil
 		}
 	case uint, uint8, uint16, uint32, uint64:
-		return reflect.ValueOf(vt).Uint(), true
+		return reflect.ValueOf(vt).Uint(), nil
 	case float32, float64:
 		val := reflect.ValueOf(vt).Float()
 		if val >= 0 && val <= math.MaxUint64 {
-			return uint64(val), true
+			return uint64(val), nil
 		}
 	}
-	return d, false
+	return d, ErrWrongType
 }
 
 // Float attempts asserting answer as a float64. Casting from other number types will be done if necessary.
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
-func (a *Answer) Float(d float64) (float64, bool) {
+func (a *Answer) Float(d float64) (float64, error) {
+	if a.value == nil {
+		return d, ErrNotFound
+	}
 	switch vt := a.value.(type) {
 	case int, int8, int16, int32, int64:
-		return float64(reflect.ValueOf(vt).Int()), true
+		return float64(reflect.ValueOf(vt).Int()), nil
 	case uint, uint8, uint16, uint32, uint64:
-		return float64(reflect.ValueOf(vt).Uint()), true
+		return float64(reflect.ValueOf(vt).Uint()), nil
 	case float32:
-		return float64(vt), true
+		return float64(vt), nil
 	case float64:
-		return vt, true
+		return vt, nil
 	}
-	return d, false
+	return d, ErrWrongType
 }

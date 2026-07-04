@@ -165,21 +165,21 @@ func TestString(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "string").String("default")
-	if !ok || res != "test" {
-		t.Errorf(`String() = ("%s", %t); want ("test", true)`, res, ok)
+	res, err := For(source, "string").String("default")
+	if err != nil || res != "test" {
+		t.Errorf(`String() = ("%s", %v); want ("test", <nil>)`, res, err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "number").String("default")
-	if ok || res != "default" {
-		t.Errorf(`String() = ("%s", %t); want ("default", false)`, res, ok)
+	res, err = For(source, "number").String("default")
+	if err != ErrWrongType || res != "default" {
+		t.Errorf(`String() = ("%s", %v); want ("default", wrong type)`, res, err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").String("default")
-	if ok || res != "default" {
-		t.Errorf(`String() = ("%s", %t); want ("default", false)`, res, ok)
+	res, err = For(source, "nothing").String("default")
+	if err != ErrNotFound || res != "default" {
+		t.Errorf(`String() = ("%s", %v); want ("default", not found)`, res, err)
 	}
 
 }
@@ -193,27 +193,27 @@ func TestBool(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "bool1").Bool(false)
-	if !ok || res != true {
-		t.Errorf(`Bool() = (%t, %t); want (true, true)`, res, ok)
+	res, err := For(source, "bool1").Bool(false)
+	if err != nil || res != true {
+		t.Errorf(`Bool() = (%t, %v); want (true, <nil>)`, res, err)
 	}
 
 	// OK
-	res, ok = For(source, "bool2").Bool(false)
-	if !ok || res != false {
-		t.Errorf(`Bool() = (%t, %t); want (false, true)`, res, ok)
+	res, err = For(source, "bool2").Bool(false)
+	if err != nil || res != false {
+		t.Errorf(`Bool() = (%t, %v); want (false, <nil>)`, res, err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "number").Bool(false)
-	if ok || res != false {
-		t.Errorf(`Bool() = (%t, %t); want (false, false)`, res, ok)
+	res, err = For(source, "number").Bool(false)
+	if err != ErrWrongType || res != false {
+		t.Errorf(`Bool() = (%t, %v); want (false, wrong type)`, res, err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").Bool(false)
-	if ok || res != false {
-		t.Errorf(`Bool() = (%t, %t); want (false, false)`, res, ok)
+	res, err = For(source, "nothing").Bool(false)
+	if err != ErrNotFound || res != false {
+		t.Errorf(`Bool() = (%t, %v); want (false, not found)`, res, err)
 	}
 
 }
@@ -231,51 +231,51 @@ func TestInt(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "positive").Int(5)
-	if !ok || res != 100 {
-		t.Errorf("Int() = (%d, %t); want (100, true)", res, ok)
+	res, err := For(source, "positive").Int(5)
+	if err != nil || res != 100 {
+		t.Errorf("Int() = (%d, %v); want (100, <nil>)", res, err)
 	}
 
 	// OK negative
-	res, ok = For(source, "negative").Int(5)
-	if !ok || res != -100 {
-		t.Errorf("Int() = (%d, %t); want (-100, true)", res, ok)
+	res, err = For(source, "negative").Int(5)
+	if err != nil || res != -100 {
+		t.Errorf("Int() = (%d, %v); want (-100, <nil>)", res, err)
 	}
 
 	// OK unsigned
-	res, ok = For(source, "unsigned").Int(5)
-	if !ok || res != 100 {
-		t.Errorf("Int() = (%d, %t); want (100, true)", res, ok)
+	res, err = For(source, "unsigned").Int(5)
+	if err != nil || res != 100 {
+		t.Errorf("Int() = (%d, %v); want (100, <nil>)", res, err)
 	}
 
 	// OK float
-	res, ok = For(source, "float").Int(5)
-	if !ok || res != 100 {
-		t.Errorf("Int() = (%d, %t); want (100, true)", res, ok)
+	res, err = For(source, "float").Int(5)
+	if err != nil || res != 100 {
+		t.Errorf("Int() = (%d, %v); want (100, <nil>)", res, err)
 	}
 
 	// OK negative float
-	res, ok = For(source, "negative_float").Int(5)
-	if !ok || res != -100 {
-		t.Errorf("Int() = (%d, %t); want (-100, true)", res, ok)
+	res, err = For(source, "negative_float").Int(5)
+	if err != nil || res != -100 {
+		t.Errorf("Int() = (%d, %v); want (-100, <nil>)", res, err)
 	}
 
 	// Too big number
-	res, ok = For(source, "toobig").Int(5)
-	if ok || res != 5 {
-		t.Errorf("Int() = (%d, %t); want (5, false)", res, ok)
+	res, err = For(source, "toobig").Int(5)
+	if err != ErrWrongType || res != 5 {
+		t.Errorf("Int() = (%d, %v); want (5, wrong type)", res, err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "string").Int(5)
-	if ok || res != 5 {
-		t.Errorf("Int() = (%d, %t); want (5, false)", res, ok)
+	res, err = For(source, "string").Int(5)
+	if err != ErrWrongType || res != 5 {
+		t.Errorf("Int() = (%d, %v); want (5, wrong type)", res, err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").Int(5)
-	if ok || res != 5 {
-		t.Errorf("Int() = (%d, %t); want (5, false)", res, ok)
+	res, err = For(source, "nothing").Int(5)
+	if err != ErrNotFound || res != 5 {
+		t.Errorf("Int() = (%d, %v); want (5, not found)", res, err)
 	}
 
 }
@@ -291,39 +291,39 @@ func TestUint(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "positive").Uint(5)
-	if !ok || res != 100 {
-		t.Errorf("Uint() = (%d, %t); want (100, true)", res, ok)
+	res, err := For(source, "positive").Uint(5)
+	if err != nil || res != 100 {
+		t.Errorf("Uint() = (%d, %v); want (100, <nil>)", res, err)
 	}
 
 	// OK unsigned
-	res, ok = For(source, "unsigned").Uint(5)
-	if !ok || res != 100 {
-		t.Errorf("Uint() = (%d, %t); want (100, true)", res, ok)
+	res, err = For(source, "unsigned").Uint(5)
+	if err != nil || res != 100 {
+		t.Errorf("Uint() = (%d, %v); want (100, <nil>)", res, err)
 	}
 
 	// OK float
-	res, ok = For(source, "float").Uint(5)
-	if !ok || res != 100 {
-		t.Errorf("Uint() = (%d, %t); want (100, true)", res, ok)
+	res, err = For(source, "float").Uint(5)
+	if err != nil || res != 100 {
+		t.Errorf("Uint() = (%d, %v); want (100, <nil>)", res, err)
 	}
 
 	// Fail on negative
-	res, ok = For(source, "negative").Uint(5)
-	if ok || res != 5 {
-		t.Errorf("Uint() = (%d, %t); want (5, false)", res, ok)
+	res, err = For(source, "negative").Uint(5)
+	if err != ErrWrongType || res != 5 {
+		t.Errorf("Uint() = (%d, %v); want (5, wrong type)", res, err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "string").Uint(5)
-	if ok || res != 5 {
-		t.Errorf("Uint() = (%d, %t); want (5, false)", res, ok)
+	res, err = For(source, "string").Uint(5)
+	if err != ErrWrongType || res != 5 {
+		t.Errorf("Uint() = (%d, %v); want (5, wrong type)", res, err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").Uint(5)
-	if ok || res != 5 {
-		t.Errorf("Uint() = (%d, %t); want (5, false)", res, ok)
+	res, err = For(source, "nothing").Uint(5)
+	if err != ErrNotFound || res != 5 {
+		t.Errorf("Uint() = (%d, %v); want (5, not found)", res, err)
 	}
 
 }
@@ -340,45 +340,45 @@ func TestFloat(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "positive").Float(5)
-	if !ok || res != 100 {
-		t.Errorf("Float() = (%f, %t); want (100, true)", res, ok)
+	res, err := For(source, "positive").Float(5)
+	if err != nil || res != 100 {
+		t.Errorf("Float() = (%f, %v); want (100, <nil>)", res, err)
 	}
 
 	// OK negative
-	res, ok = For(source, "negative").Float(5)
-	if !ok || res != -100 {
-		t.Errorf("Float() = (%f, %t); want (-100, true)", res, ok)
+	res, err = For(source, "negative").Float(5)
+	if err != nil || res != -100 {
+		t.Errorf("Float() = (%f, %v); want (-100, <nil>)", res, err)
 	}
 
 	// OK unsigned
-	res, ok = For(source, "unsigned").Float(5)
-	if !ok || res != 100 {
-		t.Errorf("Float() = (%f, %t); want (100, true)", res, ok)
+	res, err = For(source, "unsigned").Float(5)
+	if err != nil || res != 100 {
+		t.Errorf("Float() = (%f, %v); want (100, <nil>)", res, err)
 	}
 
 	// OK float32
-	res, ok = For(source, "float32").Float(5)
-	if !ok || math.Abs(res-100.1) > .00001 {
-		t.Errorf("Float() = (%f, %t); want (100.1, true)", res, ok)
+	res, err = For(source, "float32").Float(5)
+	if err != nil || math.Abs(res-100.1) > .00001 {
+		t.Errorf("Float() = (%f, %v); want (100.1, <nil>)", res, err)
 	}
 
 	// OK float64
-	res, ok = For(source, "float64").Float(5)
-	if !ok || res != 100.1 {
-		t.Errorf("Float() = (%f, %t); want (100.1, true)", res, ok)
+	res, err = For(source, "float64").Float(5)
+	if err != nil || res != 100.1 {
+		t.Errorf("Float() = (%f, %v); want (100.1, <nil>)", res, err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "string").Float(5)
-	if ok || res != 5 {
-		t.Errorf("Float() = (%f, %t); want (5, false)", res, ok)
+	res, err = For(source, "string").Float(5)
+	if err != ErrWrongType || res != 5 {
+		t.Errorf("Float() = (%f, %v); want (5, wrong type)", res, err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").Float(5)
-	if ok || res != 5 {
-		t.Errorf("Float() = (%f, %t); want (5, false)", res, ok)
+	res, err = For(source, "nothing").Float(5)
+	if err != ErrNotFound || res != 5 {
+		t.Errorf("Float() = (%f, %v); want (5, not found)", res, err)
 	}
 
 }
@@ -394,27 +394,27 @@ func TestSlice(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "slice1").Slice(def)
-	if !ok || len(res) != 5 {
-		t.Errorf("Slice() = ([%d], %t); want ([5]], true)", len(res), ok)
+	res, err := For(source, "slice1").Slice(def)
+	if err != nil || len(res) != 5 {
+		t.Errorf("Slice() = ([%d], %v); want ([5]], <nil>)", len(res), err)
 	}
 
 	// OK
-	res, ok = For(source, "slice2").Slice(def)
-	if !ok || len(res) != 0 {
-		t.Errorf("Slice() = ([%d], %t); want ([0], true)", len(res), ok)
+	res, err = For(source, "slice2").Slice(def)
+	if err != nil || len(res) != 0 {
+		t.Errorf("Slice() = ([%d], %v); want ([0], <nil>)", len(res), err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "string").Slice(def)
-	if ok || len(res) != 1 {
-		t.Errorf("Slice() = ([%d], %t); want ([1], false)", len(res), ok)
+	res, err = For(source, "string").Slice(def)
+	if err != ErrWrongType || len(res) != 1 {
+		t.Errorf("Slice() = ([%d], %v); want ([1], wrong type)", len(res), err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").Slice(def)
-	if ok || len(res) != 1 {
-		t.Errorf("Slice() = ([%d], %t); want ([1], false)", len(res), ok)
+	res, err = For(source, "nothing").Slice(def)
+	if err != ErrNotFound || len(res) != 1 {
+		t.Errorf("Slice() = ([%d], %v); want ([1], not found)", len(res), err)
 	}
 
 }
@@ -432,27 +432,27 @@ func TestCustomSlice(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "slice1").Slice(def)
-	if !ok || len(res) != 5 {
-		t.Errorf("Slice() = ([%d], %t); want ([5]], true)", len(res), ok)
+	res, err := For(source, "slice1").Slice(def)
+	if err != nil || len(res) != 5 {
+		t.Errorf("Slice() = ([%d], %v); want ([5]], <nil>)", len(res), err)
 	}
 
 	// OK
-	res, ok = For(source, "slice2").Slice(def)
-	if !ok || len(res) != 0 {
-		t.Errorf("Slice() = ([%d], %t); want ([0], true)", len(res), ok)
+	res, err = For(source, "slice2").Slice(def)
+	if err != nil || len(res) != 0 {
+		t.Errorf("Slice() = ([%d], %v); want ([0], <nil>)", len(res), err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "string").Slice(def)
-	if ok || len(res) != 1 {
-		t.Errorf("Slice() = ([%d], %t); want ([1], false)", len(res), ok)
+	res, err = For(source, "string").Slice(def)
+	if err != ErrWrongType || len(res) != 1 {
+		t.Errorf("Slice() = ([%d], %v); want ([1], wrong type)", len(res), err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").Slice(def)
-	if ok || len(res) != 1 {
-		t.Errorf("Slice() = ([%d], %t); want ([1], false)", len(res), ok)
+	res, err = For(source, "nothing").Slice(def)
+	if err != ErrNotFound || len(res) != 1 {
+		t.Errorf("Slice() = ([%d], %v); want ([1], not found)", len(res), err)
 	}
 
 }
@@ -467,21 +467,21 @@ func TestMap(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "map").Map(def)
-	if !ok || len(res) != 2 {
-		t.Errorf("Map() = ([%d], %t); want ([2]], true)", len(res), ok)
+	res, err := For(source, "map").Map(def)
+	if err != nil || len(res) != 2 {
+		t.Errorf("Map() = ([%d], %v); want ([2]], <nil>)", len(res), err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "string").Map(def)
-	if ok || len(res) != 1 {
-		t.Errorf("Map() = ([%d], %t); want ([1], false)", len(res), ok)
+	res, err = For(source, "string").Map(def)
+	if err != ErrWrongType || len(res) != 1 {
+		t.Errorf("Map() = ([%d], %v); want ([1], wrong type)", len(res), err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").Map(def)
-	if ok || len(res) != 1 {
-		t.Errorf("Map() = ([%d], %t); want ([1], false)", len(res), ok)
+	res, err = For(source, "nothing").Map(def)
+	if err != ErrNotFound || len(res) != 1 {
+		t.Errorf("Map() = ([%d], %v); want ([1], not found)", len(res), err)
 	}
 
 }
@@ -498,21 +498,21 @@ func TestCustomMap(t *testing.T) {
 	}
 
 	// OK
-	res, ok := For(source, "map").Map(def)
-	if !ok || len(res) != 2 {
-		t.Errorf("Map() = ([%d], %t); want ([2]], true)", len(res), ok)
+	res, err := For(source, "map").Map(def)
+	if err != nil || len(res) != 2 {
+		t.Errorf("Map() = ([%d], %v); want ([2]], <nil>)", len(res), err)
 	}
 
 	// Wrong type
-	res, ok = For(source, "string").Map(def)
-	if ok || len(res) != 1 {
-		t.Errorf("Map() = ([%d], %t); want ([1], false)", len(res), ok)
+	res, err = For(source, "string").Map(def)
+	if err != ErrWrongType || len(res) != 1 {
+		t.Errorf("Map() = ([%d], %v); want ([1], wrong type)", len(res), err)
 	}
 
 	// Missing
-	res, ok = For(source, "nothing").Map(def)
-	if ok || len(res) != 1 {
-		t.Errorf("Map() = ([%d], %t); want ([1], false)", len(res), ok)
+	res, err = For(source, "nothing").Map(def)
+	if err != ErrNotFound || len(res) != 1 {
+		t.Errorf("Map() = ([%d], %v); want ([1], not found)", len(res), err)
 	}
 
 }
@@ -573,7 +573,7 @@ func TestValue(t *testing.T) {
 	// Missing
 	res = For(source, "nothing").Value()
 	if res != nil {
-		t.Errorf("Value() = (%v); want (nil)", res)
+		t.Errorf("Value() = (%v); want (<nil>)", res)
 	}
 
 }
