@@ -9,9 +9,6 @@
 and you shall receive.
 </p>
 Ask provides a simple way of accessing nested properties in maps and slices. Works great in combination with encoding/json and other packages that "Unmarshal" arbitrary data into Go data-types. Inspired by the get function in the lodash javascript library.
-<br/><br/>
-
-:warning: From version `v0.3.0`, the package requires [Go 1.17+](https://golang.org/doc/install), due to the usage of new additions to the reflect package.
 
 ## Use
 
@@ -55,7 +52,6 @@ Additional paths can be traversed by calling Path()/PathArgs() on the resulting 
 (a *Answer) Path(path string) *Answer
 (a *Answer) PathArgs(parts ...interface{}) *Answer
 ```
-
 
 ### Type assertion
 
